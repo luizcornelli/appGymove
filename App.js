@@ -1,26 +1,89 @@
-import React from 'react';
-import { View, KeyboardAvoidingView, Image, TextInput, TouchableOpacity, Text, StyleSheet } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import {
+  View, KeyboardAvoidingView, Image,
+  TextInput, TouchableOpacity, Text,
+  StyleSheet, Animated, Keyboard
+} from 'react-native';
 
 export default function App() {
+
+  const [offset] = useState(new Animated.ValueXY({ x: 0, y: 80 }));
+  const [opacity] = useState(new Animated.Value(0));
+  const [logo] = useState(new Animated.ValueXY({ x: 200, y: 155 }));
+
+  useEffect(() => {
+    keyBoardDidShowListener = Keyboard.addListener('keyboardDidShow', keyboardDidShow);
+    keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', keyboardDidHide);
+
+    Animated.parallel([
+      Animated.spring(offset.y, {
+        toValue: 0,
+        speed: 4,
+        bounciness: 30
+      }), Animated.timing(opacity, {
+        toValue: 1,
+        duration: 300
+      })
+    ]).start();
+  }, []);
+
+  function keyboardDidShow() {
+    Animated.parallel([
+      Animated.timing(logo.x, {
+        toValue: 60,
+        duration: 100
+      }),
+      Animated.timing(logo.y, {
+        toValue: 65,
+        duration: 100
+      })
+    ]).start();
+  }
+
+  function keyboardDidHide() {
+    Animated.parallel([
+      Animated.timing(logo.x, {
+        toValue: 200,
+        duration: 100
+      }),
+      Animated.timing(logo.y, {
+        toValue: 155,
+        duration: 100
+      })
+    ]).start();
+  }
+
   return (
     <KeyboardAvoidingView style={styles.background}>
 
       <View style={styles.containerLogo}>
-        <Image
+        <Animated.Image
+          style={{
+            width: logo.x,
+            height: logo.y
+          }}
           source={require('./src/assets/appGymoveLogo.png')}
         />
       </View>
 
-      <View style={styles.container}>
+      <Animated.View style={[
+        styles.container,
+        {
+          opacity: opacity,
+          transform: [
+            { translateY: offset.y }
+          ]
+        }
+      ]}>
 
         <TextInput style={styles.input}
-          placeholder="email"
+          placeholder="Email"
           autoCorrect={false}
           onChangeText={() => { }}
         />
 
         <TextInput style={styles.input}
-          placeholder="senha"
+          placeholder="Senha"
           autoCorrect={false}
           onChangeText={() => { }}
         />
@@ -33,7 +96,7 @@ export default function App() {
           <Text style={styles.registerText}>Criar conta</Text>
         </TouchableOpacity>
 
-      </View>
+      </Animated.View>
 
     </KeyboardAvoidingView>
   );
